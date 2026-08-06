@@ -2,6 +2,8 @@ import {
   char,
   date,
   index,
+  integer,
+  jsonb,
   numeric,
   pgEnum,
   pgTable,
@@ -173,9 +175,142 @@ export const activities = pgTable(
   ],
 );
 
+// ---------------------------------------------------------------------------
+// Agent (Phase 2)
+// ---------------------------------------------------------------------------
+
+export const agentLane = pgEnum("agent_lane", ["visible", "research"]);
+
+export const agentTaskStatus = pgEnum("agent_task_status", [
+  "queued",
+  "running",
+  "done",
+  "failed",
+  "canceled",
+]);
+
+export const factBand = pgEnum("fact_band", [
+  "verified",
+  "probable",
+  "possible",
+]);
+
+export const factStatus = pgEnum("fact_status", [
+  "applied",
+  "proposed",
+  "dismissed",
+  "superseded",
+]);
+
+// DB-backed work queue. Rows are claimed with a lease via the
+// claim_agent_task() SQL function (FOR UPDATE SKIP LOCKED) so concurrent
+// drains never double-claim.
+export const agentTasks = pgTable(
+  "agent_tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    lane: agentLane("lane").notNull().default("research"),
+    kind: text("kind").notNull(),
+    subjectType: text("subject_type").notNull(),
+    subjectId: uuid("subject_id").notNull(),
+    payload: jsonb("payload"),
+    priority: integer("priority").notNull().default(0),
+    // Max tool calls the agent may spend on this task.
+    budget: integer("budget").notNull().default(15),
+    attempts: integer("attempts").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(3),
+    status: agentTaskStatus("status").notNull().default("queued"),
+    dueAt: timestamp("due_at", { withTimezone: true }).notNull().defaultNow(),
+    leasedUntil: timestamp("leased_until", { withTimezone: true }),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("agent_tasks_claim_idx").on(t.lane, t.status, t.dueAt),
+    index("agent_tasks_subject_idx").on(t.subjectType, t.subjectId),
+  ],
+);
+
+export const agentEvents = pgTable(
+  "agent_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => agentTasks.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    data: jsonb("data"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("agent_events_task_idx").on(t.taskId)],
+);
+
+// Chat transcript per record (contact/company/deal).
+export const agentMessages = pgTable(
+  "agent_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    subjectType: text("subject_type").notNull(),
+    subjectId: uuid("subject_id").notNull(),
+    role: text("role").notNull(),
+    content: jsonb("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("agent_messages_subject_idx").on(t.subjectType, t.subjectId)],
+);
+
+// The evidence ledger: every fact the agent finds, with its scored evidence.
+// Strong evidence → applied to the record; weak → proposed for human review.
+export const contactFacts = pgTable(
+  "contact_facts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    contactId: uuid("contact_id")
+      .notNull()
+      .references(() => contacts.id, { onDelete: "cascade" }),
+    field: text("field").notNull(),
+    value: text("value").notNull(),
+    score: numeric("score", { precision: 4, scale: 3 }).notNull(),
+    band: factBand("band").notNull(),
+    status: factStatus("status").notNull(),
+    method: text("method"),
+    sourceUrl: text("source_url"),
+    evidence: jsonb("evidence").notNull(),
+    taskId: uuid("task_id"),
+    decidedBy: text("decided_by"),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("contact_facts_contact_idx").on(t.contactId, t.status),
+    index("contact_facts_review_idx").on(t.workspaceId, t.status),
+  ],
+);
+
 export type Workspace = typeof workspaces.$inferSelect;
 export type Company = typeof companies.$inferSelect;
 export type Contact = typeof contacts.$inferSelect;
 export type Deal = typeof deals.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
 export type DealStage = Deal["stage"];
+export type AgentTask = typeof agentTasks.$inferSelect;
+export type AgentEvent = typeof agentEvents.$inferSelect;
+export type ContactFact = typeof contactFacts.$inferSelect;

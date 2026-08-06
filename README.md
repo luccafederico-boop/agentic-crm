@@ -48,8 +48,8 @@ a human reviews. Nothing about a person is guessed.
 ## Roadmap
 
 - [x] Phase 0 — Scaffold, auth, workspace bootstrap, CI
-- [ ] Phase 1 — Core CRM: companies, contacts, deals, activities timeline
-- [ ] Phase 2 — Research agent + evidence ledger + review UI + record chat
+- [x] Phase 1 — Core CRM: companies, contacts, deals, activities timeline
+- [x] Phase 2 — Research agent + evidence ledger + review UI + record chat
 - [ ] Phase 3 — Dashboards, quick switcher, logo mirroring
 - [ ] Phase 4 — Multi-currency deals
 - [ ] Phase 5 — Gmail + Calendar sync

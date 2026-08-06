@@ -9,6 +9,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    setupFiles: ["dotenv/config"],
     include: ["tests/**/*.test.ts"],
     // Until Phase 2 lands the first test files.
     passWithNoTests: true,

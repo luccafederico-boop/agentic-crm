@@ -1,0 +1,88 @@
+import { anthropic } from "@ai-sdk/anthropic";
+import {
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  type UIMessage,
+} from "ai";
+import { and, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { chatSystemPrompt } from "@/lib/agent/prompts";
+import { buildContactTools } from "@/lib/agent/tools";
+import { db } from "@/lib/db";
+import { agentMessages, contacts, workspaces } from "@/lib/db/schema";
+import { createClient } from "@/lib/supabase/server";
+
+export const maxDuration = 60;
+
+const MODEL_ID = process.env.AGENT_MODEL ?? "claude-sonnet-5";
+
+export async function POST(req: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  const workspace = await db.query.workspaces.findFirst({
+    where: eq(workspaces.ownerId, user.id),
+  });
+  if (!workspace) {
+    return NextResponse.json({ error: "no workspace" }, { status: 403 });
+  }
+
+  const body = (await req.json()) as {
+    messages: UIMessage[];
+    subjectType?: string;
+    subjectId?: string;
+  };
+
+  if (body.subjectType !== "contact" || !body.subjectId) {
+    return NextResponse.json({ error: "unsupported subject" }, { status: 400 });
+  }
+  const contact = await db.query.contacts.findFirst({
+    where: and(
+      eq(contacts.id, body.subjectId),
+      eq(contacts.workspaceId, workspace.id),
+    ),
+  });
+  if (!contact) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
+
+  const subjectId = body.subjectId;
+
+  const result = streamText({
+    model: anthropic(MODEL_ID),
+    system: chatSystemPrompt("contact"),
+    messages: await convertToModelMessages(body.messages),
+    tools: buildContactTools({
+      workspaceId: workspace.id,
+      contactId: subjectId,
+    }),
+    stopWhen: stepCountIs(8),
+  });
+
+  return result.toUIMessageStreamResponse({
+    originalMessages: body.messages,
+    onFinish: async ({ responseMessage }) => {
+      // Persist the last user turn and the assistant reply.
+      const lastUser = [...body.messages]
+        .reverse()
+        .find((m) => m.role === "user");
+      const rows = [lastUser, responseMessage]
+        .filter((m): m is UIMessage => Boolean(m))
+        .map((m) => ({
+          workspaceId: workspace.id,
+          subjectType: "contact",
+          subjectId,
+          role: m.role,
+          content: m.parts,
+        }));
+      if (rows.length) {
+        await db.insert(agentMessages).values(rows);
+      }
+    },
+  });
+}
