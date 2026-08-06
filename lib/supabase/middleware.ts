@@ -47,6 +47,13 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+
+  // API routes enforce their own auth (session or secret) and must never be
+  // redirected to the login page HTML.
+  if (pathname.startsWith("/api")) {
+    return supabaseResponse;
+  }
+
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
   if (!user && !isPublic) {
