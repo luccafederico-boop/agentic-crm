@@ -19,7 +19,11 @@ export const metadata: Metadata = {
     "An agent-first CRM: a research agent with an evidence ledger does the busywork.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
