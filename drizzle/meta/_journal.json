@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1786043944381,
+      "tag": "0000_workspaces",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786044129681,
+      "tag": "0001_core-crm",
+      "breakpoints": true
+    }
+  ]
+}
