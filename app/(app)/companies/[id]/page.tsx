@@ -92,7 +92,11 @@ export default async function CompanyDetailPage({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <CompanyLogo name={company.name} domain={company.domain} />
+                <CompanyLogo
+                  name={company.name}
+                  domain={company.domain}
+                  logoPath={company.logoPath}
+                />
                 Details
               </CardTitle>
             </CardHeader>

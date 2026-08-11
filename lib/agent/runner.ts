@@ -62,9 +62,48 @@ async function executeTask(task: AgentTask) {
     case "research_contact":
       await runContactResearch(task);
       break;
+    case "mirror_logo":
+      await runLogoMirror(task);
+      break;
     default:
       throw new Error(`Unknown task kind: ${task.kind}`);
   }
+}
+
+/** Visible-lane task (no LLM): mirror the company favicon into Supabase
+ * Storage so the app stops hotlinking third parties. */
+async function runLogoMirror(task: AgentTask) {
+  const company = await db.query.companies.findFirst({
+    where: and(
+      eq(companies.id, task.subjectId),
+      eq(companies.workspaceId, task.workspaceId),
+    ),
+  });
+  if (!company) throw new Error("Company no longer exists");
+  if (!company.domain) {
+    await logEvent(task.id, "skipped", { reason: "no domain" });
+    return;
+  }
+
+  const res = await fetch(
+    `https://www.google.com/s2/favicons?domain=${encodeURIComponent(company.domain)}&sz=128`,
+    { signal: AbortSignal.timeout(10_000) },
+  );
+  if (!res.ok) throw new Error(`Favicon fetch failed: ${res.status}`);
+  const contentType = res.headers.get("content-type") ?? "image/png";
+  const bytes = await res.arrayBuffer();
+  if (bytes.byteLength < 100) {
+    await logEvent(task.id, "skipped", { reason: "favicon too small/empty" });
+    return;
+  }
+
+  const { uploadLogo } = await import("@/lib/supabase/storage");
+  const path = await uploadLogo(company.id, bytes, contentType);
+  await db
+    .update(companies)
+    .set({ logoPath: path, updatedAt: new Date() })
+    .where(eq(companies.id, company.id));
+  await logEvent(task.id, "mirrored", { path, bytes: bytes.byteLength });
 }
 
 async function runContactResearch(task: AgentTask) {

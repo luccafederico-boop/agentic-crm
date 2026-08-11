@@ -188,6 +188,12 @@ export function buildContactTools(ctx: ToolContext) {
           .orderBy(desc(activities.occurredAt))
           .limit(10);
         return {
+          // Tool outputs must be plain JSON — Date objects fail the SDK's
+          // ModelMessage validation on the next step (streamText aborts).
+          recentActivity: recent.map((r) => ({
+            ...r,
+            occurredAt: r.occurredAt.toISOString(),
+          })),
           contact: {
             name: contact.name,
             email: contact.email,
@@ -205,7 +211,6 @@ export function buildContactTools(ctx: ToolContext) {
                 industry: company.industry,
               }
             : null,
-          recentActivity: recent,
         };
       },
     }),

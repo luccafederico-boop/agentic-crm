@@ -1,6 +1,6 @@
 # Handoff — resume point
 
-> Snapshot written 2026-08-06 at the end of Phase 2. Read `AGENTS.md` first for
+> Snapshot updated 2026-08-11 at the end of Phase 3. Read `AGENTS.md` first for
 > architecture and gotchas; this file is the "where exactly did we stop" note.
 
 ## State
@@ -8,19 +8,19 @@
 | Item | Status |
 |---|---|
 | Production | https://agentic-crm-delta.vercel.app — live, login working |
-| Phases 0–2 | ✅ complete, deployed, CI green |
+| Phases 0–3 | ✅ complete, deployed, CI green |
 | Tests | 13 passing (9 evidence unit + 4 queue integration) |
-| Agent E2E | Verified live: ambiguous person → 0 facts saved; real public person → 3 `verified` facts auto-applied with cited sources |
+| Agent E2E | Verified live: ambiguous person → 0 facts saved; real public person → 3 `verified` facts auto-applied with cited sources; research also executed on Vercel prod |
+| Chat | ✅ runtime-tested (streams, runs tools, persists transcript). Fixed: tool outputs must be plain JSON — Date objects break streamText step 2 |
+| Visible lane | ✅ `mirror_logo` live — 10/10 seed logos mirrored to Supabase Storage |
 
 ## Pending checklist (start here)
 
-- [ ] **Manual QA of Phase 2 in production**: Research button on a contact, live task trace, `/review` approve/dismiss flow, evidence popovers
-- [ ] **"Ask agent" chat**: typechecks and builds but was **never exercised at runtime** — open a contact, ask something, watch for errors (`/api/agent/chat`)
-- [ ] Collect user feedback on Phase 2 UX before building Phase 3
-- [ ] Deals kanban sums stage totals assuming USD (fine until Phase 4 fixes it properly)
+- [ ] User manual QA in production: Research button, task trace, `/review`, chat panel, dashboard, Ctrl+K
+- [ ] Deals kanban and dashboard sum amounts assuming USD (Phase 4 fixes properly)
 - [ ] Investigate why `push` doesn't auto-trigger GitHub Actions (manual `gh workflow run CI` works)
 - [ ] Rotate/revoke the Supabase personal access token once infra automation is no longer needed
-- [ ] Next feature work: **Phase 3** (see roadmap in `AGENTS.md`)
+- [ ] Next feature work: **Phase 4 — multi-currency** (see roadmap in `AGENTS.md`)
 
 ## Laptop setup
 

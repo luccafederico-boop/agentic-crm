@@ -81,7 +81,11 @@ export default async function CompaniesPage({
                   href={`/companies/${company.id}`}
                   className="flex items-center gap-2 font-medium hover:underline"
                 >
-                  <CompanyLogo name={company.name} domain={company.domain} />
+                  <CompanyLogo
+                    name={company.name}
+                    domain={company.domain}
+                    logoPath={company.logoPath}
+                  />
                   {company.name}
                 </Link>
               </TableCell>

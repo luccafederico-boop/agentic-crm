@@ -3,8 +3,11 @@
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { logActivity } from "@/lib/activity";
+import { enqueueTask } from "@/lib/agent/queue";
+import { drainQueue } from "@/lib/agent/runner";
 import { ensureWorkspace } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { companies } from "@/lib/db/schema";
@@ -19,6 +22,27 @@ const companySchema = z.object({
   size: optionalText,
   notes: optionalText,
 });
+
+async function queueLogoMirror(workspaceId: string, companyId: string) {
+  const task = await enqueueTask({
+    workspaceId,
+    lane: "visible",
+    kind: "mirror_logo",
+    subjectType: "company",
+    subjectId: companyId,
+    priority: 100,
+    budget: 1,
+  });
+  if (task) {
+    after(async () => {
+      try {
+        await drainQueue(20_000);
+      } catch {
+        // Daily cron backstop retries.
+      }
+    });
+  }
+}
 
 export async function saveCompany(
   _prev: FormState,
@@ -38,6 +62,9 @@ export async function saveCompany(
       .where(
         and(eq(companies.id, id), eq(companies.workspaceId, workspace.id)),
       );
+    if (values.domain) {
+      await queueLogoMirror(workspace.id, id);
+    }
     revalidatePath(`/companies/${id}`);
     revalidatePath("/companies");
     return { error: null };
@@ -54,6 +81,9 @@ export async function saveCompany(
     subjectId: created.id,
     title: `Company "${created.name}" created`,
   });
+  if (created.domain) {
+    await queueLogoMirror(workspace.id, created.id);
+  }
   redirect(`/companies/${created.id}`);
 }
 

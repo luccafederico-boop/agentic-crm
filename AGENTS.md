@@ -48,6 +48,6 @@ Current state and pending work: see `docs/HANDOFF.md`. UI, code, and commits are
 - [x] Phase 0 — scaffold, Supabase auth, workspace bootstrap, CI
 - [x] Phase 1 — core CRM (companies, contacts, deals kanban, activities timeline, seed)
 - [x] Phase 2 — research agent + evidence ledger + review UI + record chat
-- [ ] Phase 3 — dashboards (recharts), cmdk quick switcher, logo mirror to Supabase Storage (`visible` lane), README polish
+- [x] Phase 3 — dashboards (recharts), cmdk quick switcher, logo mirror to Supabase Storage (`visible` lane), README polish
 - [ ] Phase 4 — multi-currency (frankfurter.app, lazy fetch, convert at aggregation time)
 - [ ] Phase 5 — Gmail + Calendar sync (separate OAuth flow, encrypted refresh tokens, Testing-mode Google app)

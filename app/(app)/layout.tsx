@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "@/actions/auth";
+import { QuickSwitcher } from "@/components/quick-switcher";
 import { Button } from "@/components/ui/button";
 import { ensureWorkspace } from "@/lib/auth";
 
@@ -35,6 +36,10 @@ export default async function AppLayout({
           <p className="text-sm font-semibold">Agentic CRM</p>
           <p className="truncate text-xs text-muted-foreground">
             {workspace.name}
+          </p>
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            Press <kbd className="rounded border px-1">Ctrl</kbd>+
+            <kbd className="rounded border px-1">K</kbd> to search
           </p>
         </div>
         <nav className="flex-1 space-y-1 p-2">
@@ -63,6 +68,7 @@ export default async function AppLayout({
         </div>
       </aside>
       <main className="flex-1 overflow-x-hidden p-6">{children}</main>
+      <QuickSwitcher />
     </div>
   );
 }

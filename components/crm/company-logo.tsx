@@ -1,17 +1,29 @@
+import { logoPublicUrl } from "@/lib/supabase/storage";
+
 export function CompanyLogo({
   name,
   domain,
+  logoPath,
   size = 24,
 }: {
   name: string;
   domain?: string | null;
+  logoPath?: string | null;
   size?: number;
 }) {
-  if (domain) {
+  // Prefer the mirrored copy in Supabase Storage (visible-lane agent task);
+  // fall back to the favicon hotlink until the mirror task has run.
+  const src = logoPath
+    ? logoPublicUrl(logoPath)
+    : domain
+      ? `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`
+      : null;
+
+  if (src) {
     return (
-      // biome-ignore lint/performance/noImgElement: hotlinked favicon for Phase 1; mirrored to Supabase Storage in Phase 3
+      // biome-ignore lint/performance/noImgElement: tiny favicon-size images; optimization overhead not worth it
       <img
-        src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`}
+        src={src}
         alt={`${name} logo`}
         width={size}
         height={size}
