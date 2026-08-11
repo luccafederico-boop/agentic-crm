@@ -121,6 +121,6 @@ flowchart LR
 - [x] Phase 2 — Research agent + evidence ledger + review UI + record chat
 - [x] Phase 3 — Dashboards, ⌘K quick switcher, logo mirroring (visible lane)
 - [x] Phase 4 — Multi-currency deals (frankfurter.app, lazily-cached daily rates, convert at aggregation time)
-- [ ] Phase 5 — Gmail + Calendar sync
+- [x] Phase 5 — Gmail + Calendar sync (read-only scopes, encrypted refresh tokens, deduped timeline activities)
 
 

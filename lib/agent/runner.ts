@@ -65,6 +65,12 @@ async function executeTask(task: AgentTask) {
     case "mirror_logo":
       await runLogoMirror(task);
       break;
+    case "google_sync": {
+      const { runGoogleSync } = await import("@/lib/google/sync");
+      const stats = await runGoogleSync(task.workspaceId);
+      await logEvent(task.id, "synced", stats);
+      break;
+    }
     default:
       throw new Error(`Unknown task kind: ${task.kind}`);
   }

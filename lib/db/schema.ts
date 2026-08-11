@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   char,
   date,
@@ -10,6 +11,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -162,6 +164,9 @@ export const activities = pgTable(
     subjectId: uuid("subject_id").notNull(),
     title: text("title").notNull(),
     body: text("body"),
+    // Set by Google sync (gmail:<messageId> / gcal:<eventId>) so re-syncs
+    // never duplicate timeline entries.
+    externalId: text("external_id"),
     occurredAt: timestamp("occurred_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -172,8 +177,29 @@ export const activities = pgTable(
   (t) => [
     index("activities_workspace_idx").on(t.workspaceId),
     index("activities_subject_idx").on(t.subjectType, t.subjectId),
+    uniqueIndex("activities_external_idx")
+      .on(t.workspaceId, t.externalId)
+      .where(sql`${t.externalId} is not null`),
   ],
 );
+
+// One connected Google account per workspace (Phase 5). The refresh token is
+// AES-256-GCM encrypted with APP_ENCRYPTION_KEY before it touches the DB.
+export const googleAccounts = pgTable("google_accounts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id")
+    .notNull()
+    .unique()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  refreshTokenEnc: text("refresh_token_enc").notNull(),
+  scopes: text("scopes").notNull(),
+  connectedAt: timestamp("connected_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+  lastSyncError: text("last_sync_error"),
+});
 
 // Cached FX rates (frankfurter.app, ECB data). Global reference data, not
 // workspace-scoped. rate = units of `quote` per 1 `base`, so converting an
@@ -328,5 +354,6 @@ export type Deal = typeof deals.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
 export type DealStage = Deal["stage"];
 export type AgentTask = typeof agentTasks.$inferSelect;
+export type GoogleAccount = typeof googleAccounts.$inferSelect;
 export type AgentEvent = typeof agentEvents.$inferSelect;
 export type ContactFact = typeof contactFacts.$inferSelect;

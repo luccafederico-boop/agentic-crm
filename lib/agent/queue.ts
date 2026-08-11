@@ -8,7 +8,7 @@ type EnqueueInput = {
   workspaceId: string;
   lane: Lane;
   kind: string;
-  subjectType: "contact" | "company" | "deal";
+  subjectType: "contact" | "company" | "deal" | "workspace";
   subjectId: string;
   payload?: unknown;
   priority?: number;

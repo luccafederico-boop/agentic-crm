@@ -29,6 +29,13 @@
       "when": 1786475848695,
       "tag": "0003_exchange-rates",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786477359132,
+      "tag": "0004_google-sync",
+      "breakpoints": true
     }
   ]
 }

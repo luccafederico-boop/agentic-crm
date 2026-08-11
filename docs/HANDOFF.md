@@ -1,6 +1,6 @@
 # Handoff — resume point
 
-> Snapshot updated 2026-08-11 at the end of Phase 4. Read `AGENTS.md` first for
+> Snapshot updated 2026-08-11 at the end of Phase 5. Read `AGENTS.md` first for
 > architecture and gotchas; this file is the "where exactly did we stop" note.
 
 ## State
@@ -8,19 +8,21 @@
 | Item | Status |
 |---|---|
 | Production | https://agentic-crm-delta.vercel.app — live, login working (runtime on the transaction pooler after the `EMAXCONNSESSION` incident) |
-| Phases 0–4 | ✅ complete, deployed, CI green |
-| Tests | 22 passing (9 evidence unit + 4 queue integration + 9 currency) |
+| Phases 0–5 | ✅ complete, deployed, CI green |
+| Tests | 27 passing (9 evidence + 4 queue + 9 currency + 5 google) |
 | Agent E2E | Verified live: ambiguous person → 0 facts saved; real public person → 3 `verified` facts auto-applied with cited sources; research also executed on Vercel prod |
 | Chat | ✅ runtime-tested (streams, runs tools, persists transcript). Fixed: tool outputs must be plain JSON — Date objects break streamText step 2 |
 | Visible lane | ✅ `mirror_logo` live — 10/10 seed logos mirrored to Supabase Storage |
 | Multi-currency | ✅ deals keep native currency; totals convert at aggregation time to the workspace base currency (editable in Settings) via lazily-cached daily frankfurter.app rates (`exchange_rates` table, 24h TTL, stale-on-API-failure) |
+| Google sync | ✅ OAuth flow live (Testing-mode Google app, read-only Gmail/Calendar scopes). Refresh token AES-256-GCM encrypted in `google_accounts`. `google_sync` task (visible lane) matches messages/events to contacts by email → deduped timeline activities (`activities.external_id`). Enqueued on connect, "Sync now", and the daily cron |
 
 ## Pending checklist (start here)
 
+- [ ] User connects their Google account in prod (Settings → Connect Google) and verifies emails/meetings land on contact timelines
 - [ ] User manual QA in production: Research button, task trace, `/review`, chat panel, dashboard, Ctrl+K, Settings → base currency
 - [ ] Investigate why `push` doesn't auto-trigger GitHub Actions (manual `gh workflow run CI` works)
 - [ ] Rotate/revoke the Supabase personal access token once infra automation is no longer needed
-- [ ] Next feature work: **Phase 5 — Gmail + Calendar sync** (needs the user to create a Google Cloud OAuth client — Testing mode)
+- [ ] Optional polish: Gmail sync uses a 50-message window per run; consider Gmail `historyId` incremental sync if volume grows
 
 ## Laptop setup
 

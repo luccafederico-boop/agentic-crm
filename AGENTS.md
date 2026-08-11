@@ -51,4 +51,4 @@ Current state and pending work: see `docs/HANDOFF.md`. UI, code, and commits are
 - [x] Phase 2 — research agent + evidence ledger + review UI + record chat
 - [x] Phase 3 — dashboards (recharts), cmdk quick switcher, logo mirror to Supabase Storage (`visible` lane), README polish
 - [x] Phase 4 — multi-currency (frankfurter.app, lazy fetch, convert at aggregation time)
-- [ ] Phase 5 — Gmail + Calendar sync (separate OAuth flow, encrypted refresh tokens, Testing-mode Google app)
+- [x] Phase 5 — Gmail + Calendar sync (separate OAuth flow, encrypted refresh tokens, Testing-mode Google app)
