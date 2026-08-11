@@ -121,7 +121,7 @@ export default async function ContactDetailPage({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader title={contact.name} description={contact.role ?? undefined}>
         <ResearchButton contactId={contact.id} />
         <ChatPanel

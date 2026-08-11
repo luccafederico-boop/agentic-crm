@@ -30,7 +30,7 @@ export default async function ReviewPage() {
     .limit(50);
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader
         title="Review"
         description="Facts the agent proposed but could not verify strongly enough to apply."

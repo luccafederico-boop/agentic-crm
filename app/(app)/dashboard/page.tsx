@@ -2,13 +2,19 @@ import { and, count, desc, eq, gte, sql, sum } from "drizzle-orm";
 import {
   Bot,
   Building2,
+  CalendarClock,
   CircleCheck,
   CircleX,
   Clock,
   Handshake,
   Loader2,
+  Mail,
+  Phone,
+  StickyNote,
   Users,
+  Zap,
 } from "lucide-react";
+import Link from "next/link";
 import {
   PipelineBar,
   type PipelinePoint,
@@ -32,7 +38,7 @@ import {
   contacts,
   deals,
 } from "@/lib/db/schema";
-import { formatDateTime, formatMoney } from "@/lib/format";
+import { formatMoney, formatRelative } from "@/lib/format";
 
 export const metadata = { title: "Dashboard — Agentic CRM" };
 
@@ -42,6 +48,24 @@ const STAGE_LABELS: Record<string, string> = {
   proposal: "Proposal",
   won: "Won",
   lost: "Lost",
+};
+
+const ACTIVITY_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  note: StickyNote,
+  call: Phone,
+  email: Mail,
+  meeting: CalendarClock,
+  system: Zap,
+  agent: Bot,
+};
+
+const SUBJECT_PATHS: Record<string, string> = {
+  contact: "/contacts",
+  company: "/companies",
+  deal: "/deals",
 };
 
 export default async function DashboardPage() {
@@ -171,7 +195,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader
         title="Dashboard"
         description={`Pipeline and agent activity at a glance. Amounts converted to ${base}.`}
@@ -179,15 +203,17 @@ export default async function DashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(({ label, value, icon: Icon }) => (
-          <Card key={label}>
-            <CardContent className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-md border bg-muted/50">
-                <Icon className="size-4 text-muted-foreground" />
-              </span>
-              <div>
-                <p className="text-xl font-semibold tracking-tight">{value}</p>
-                <p className="text-xs text-muted-foreground">{label}</p>
+          <Card key={label} className="gap-2 py-4">
+            <CardContent className="space-y-1.5 px-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {label}
+                </p>
+                <Icon className="size-4 text-muted-foreground/70" />
               </div>
+              <p className="text-2xl font-semibold tracking-tight tabular-nums">
+                {value}
+              </p>
             </CardContent>
           </Card>
         ))}
@@ -218,28 +244,55 @@ export default async function DashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">Recent activity</CardTitle>
+            <CardDescription>
+              Everything the team, the agent and sync did lately.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {recent.length === 0 ? (
               <p className="text-sm text-muted-foreground">No activity yet.</p>
             ) : (
-              <ol className="space-y-3">
-                {recent.map((a) => (
-                  <li
-                    key={a.id}
-                    className="flex items-baseline justify-between gap-3 text-sm"
-                  >
-                    <span className="min-w-0 truncate">
-                      {a.title}
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {a.subjectType} · {a.actor}
+              <ol className="space-y-1">
+                {recent.map((a) => {
+                  const Icon = ACTIVITY_ICONS[a.type] ?? Zap;
+                  const href = SUBJECT_PATHS[a.subjectType]
+                    ? `${SUBJECT_PATHS[a.subjectType]}/${a.subjectId}`
+                    : null;
+                  const row = (
+                    <>
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-md border bg-muted/40">
+                        <Icon className="size-3.5 text-muted-foreground" />
                       </span>
-                    </span>
-                    <time className="shrink-0 text-xs text-muted-foreground">
-                      {formatDateTime(a.occurredAt)}
-                    </time>
-                  </li>
-                ))}
+                      <span className="min-w-0 flex-1 truncate text-sm">
+                        {a.title}
+                        {a.actor !== "user" && (
+                          <span className="ml-2 rounded-sm bg-primary/8 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                            {a.actor}
+                          </span>
+                        )}
+                      </span>
+                      <time className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                        {formatRelative(a.occurredAt)}
+                      </time>
+                    </>
+                  );
+                  return (
+                    <li key={a.id}>
+                      {href ? (
+                        <Link
+                          href={href}
+                          className="flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/60"
+                        >
+                          {row}
+                        </Link>
+                      ) : (
+                        <div className="flex items-center gap-3 px-2 py-1.5">
+                          {row}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ol>
             )}
           </CardContent>
@@ -251,15 +304,14 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3">
             {queueTiles.map(({ label, value, icon: Icon }) => (
-              <div
-                key={label}
-                className="flex items-center gap-2 rounded-md border p-3"
-              >
-                <Icon className="size-4 text-muted-foreground" />
-                <div>
-                  <p className="text-lg font-semibold leading-none">{value}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+              <div key={label} className="rounded-lg border bg-muted/20 p-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                  <Icon className="size-3.5 text-muted-foreground/70" />
                 </div>
+                <p className="mt-1 text-xl font-semibold tabular-nums">
+                  {value}
+                </p>
               </div>
             ))}
           </CardContent>

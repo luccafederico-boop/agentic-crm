@@ -44,7 +44,7 @@ export default async function SettingsPage({
   const flash = google ? GOOGLE_MESSAGES[google] : undefined;
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
       <PageHeader title="Settings" />
       <Card>
         <CardHeader>

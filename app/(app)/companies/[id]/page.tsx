@@ -66,7 +66,7 @@ export default async function CompanyDetailPage({
   const deleteAction = deleteCompany.bind(null, company.id);
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader
         title={company.name}
         description={company.industry ?? undefined}

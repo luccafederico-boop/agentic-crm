@@ -48,8 +48,14 @@ export function QuickSwitcher() {
         setOpen((v) => !v);
       }
     };
+    // Lets any UI (e.g. the topbar search button) open the switcher.
+    const onOpenEvent = () => setOpen(true);
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("quick-switcher:open", onOpenEvent);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("quick-switcher:open", onOpenEvent);
+    };
   }, []);
 
   useEffect(() => {

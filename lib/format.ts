@@ -37,4 +37,18 @@ export function formatDateTime(
   }).format(d);
 }
 
+// "5m ago", "3h ago", "2d ago" — falls back to a date beyond a week.
+export function formatRelative(value: Date | string): string {
+  const d = typeof value === "string" ? new Date(value) : value;
+  const diffMs = Date.now() - d.getTime();
+  const minutes = Math.round(diffMs / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  if (days <= 7) return `${days}d ago`;
+  return formatDate(d);
+}
+
 export const CURRENCIES = ["USD", "EUR", "BRL", "GBP"] as const;

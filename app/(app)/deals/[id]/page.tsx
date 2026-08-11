@@ -82,7 +82,7 @@ export default async function DealDetailPage({
   const deleteAction = deleteDeal.bind(null, deal.id);
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader
         title={deal.title}
         description={company?.name ?? "No company"}

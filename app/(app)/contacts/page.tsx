@@ -56,7 +56,7 @@ export default async function ContactsPage({
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-6xl space-y-5">
       <PageHeader title="Contacts" description="People in your network.">
         <ContactDialog
           companies={companyOptions}
@@ -69,49 +69,58 @@ export default async function ContactsPage({
         />
       </PageHeader>
       <SearchForm placeholder="Search by name or email…" defaultValue={q} />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Company</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.length === 0 && (
-            <TableRow>
-              <TableCell
-                colSpan={4}
-                className="py-8 text-center text-muted-foreground"
-              >
-                {q ? "No contacts match your search." : "No contacts yet."}
-              </TableCell>
+      <div className="overflow-hidden rounded-lg border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Company</TableHead>
             </TableRow>
-          )}
-          {rows.map(({ contact, companyName }) => (
-            <TableRow key={contact.id}>
-              <TableCell>
-                <Link
-                  href={`/contacts/${contact.id}`}
-                  className="font-medium hover:underline"
+          </TableHeader>
+          <TableBody>
+            {rows.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="py-12 text-center text-muted-foreground"
                 >
-                  {contact.name}
-                </Link>
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {contact.email ?? "—"}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {contact.role ?? "—"}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {companyName ?? "—"}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                  {q ? "No contacts match your search." : "No contacts yet."}
+                </TableCell>
+              </TableRow>
+            )}
+            {rows.map(({ contact, companyName }) => (
+              <TableRow key={contact.id}>
+                <TableCell>
+                  <Link
+                    href={`/contacts/${contact.id}`}
+                    className="flex items-center gap-2.5 font-medium hover:underline"
+                  >
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
+                      {contact.name
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((p) => p[0]?.toUpperCase())
+                        .join("")}
+                    </span>
+                    {contact.name}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {contact.email ?? "—"}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {contact.role ?? "—"}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {companyName ?? "—"}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
