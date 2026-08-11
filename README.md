@@ -1,8 +1,6 @@
 # Agentic CRM
 
-An **agent-first CRM**, built as a portfolio project. Inspired by
-[trycompai/crm](https://github.com/trycompai/crm) (MIT), rebuilt from scratch
-with a deliberately simpler stack.
+An **agent-first CRM**, built as a portfolio project.
 
 **Live demo:** https://agentic-crm-delta.vercel.app
 
@@ -125,7 +123,4 @@ flowchart LR
 - [x] Phase 4 — Multi-currency deals (frankfurter.app, lazily-cached daily rates, convert at aggregation time)
 - [ ] Phase 5 — Gmail + Calendar sync
 
-## License
 
-MIT — and a thank-you to [trycompai/crm](https://github.com/trycompai/crm)
-for the evidence-ledger concept this project reimplements from scratch.
