@@ -199,7 +199,10 @@ export async function runGoogleSync(workspaceId: string): Promise<SyncStats> {
     }
 
     const now = new Date();
-    const since = account.lastSyncAt ?? new Date(now.getTime() - LOOKBACK_MS);
+    // Always rescan the full lookback window (not just since the last sync):
+    // contacts added after connecting still get their history backfilled, and
+    // the external_id dedupe makes re-scanning idempotent and cheap.
+    const since = new Date(now.getTime() - LOOKBACK_MS);
 
     const gmail = await syncGmail(
       accessToken,
