@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatMoneyCompact } from "@/lib/format";
 
 export type PipelinePoint = {
   stage: string;
@@ -18,7 +18,13 @@ export type PipelinePoint = {
   count: number;
 };
 
-export function PipelineBar({ data }: { data: PipelinePoint[] }) {
+export function PipelineBar({
+  data,
+  currency,
+}: {
+  data: PipelinePoint[];
+  currency: string;
+}) {
   return (
     <ResponsiveContainer width="100%" height={240}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
@@ -38,9 +44,7 @@ export function PipelineBar({ data }: { data: PipelinePoint[] }) {
           axisLine={false}
           width={56}
           tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-          tickFormatter={(v: number) =>
-            v >= 1000 ? `$${Math.round(v / 1000)}k` : `$${v}`
-          }
+          tickFormatter={(v: number) => formatMoneyCompact(v, currency)}
         />
         <Tooltip
           cursor={{ fill: "var(--muted)", opacity: 0.4 }}
@@ -51,7 +55,7 @@ export function PipelineBar({ data }: { data: PipelinePoint[] }) {
               <div className="rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-sm">
                 <p className="font-medium">{p.label}</p>
                 <p className="text-muted-foreground">
-                  {formatMoney(p.total, "USD")} · {p.count} deal
+                  {formatMoney(p.total, currency)} · {p.count} deal
                   {p.count === 1 ? "" : "s"}
                 </p>
               </div>

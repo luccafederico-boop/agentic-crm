@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatMoneyCompact } from "@/lib/format";
 
 export type WonPoint = {
   month: string; // "2026-03"
@@ -18,7 +18,13 @@ export type WonPoint = {
   count: number;
 };
 
-export function WonArea({ data }: { data: WonPoint[] }) {
+export function WonArea({
+  data,
+  currency,
+}: {
+  data: WonPoint[];
+  currency: string;
+}) {
   return (
     <ResponsiveContainer width="100%" height={240}>
       <AreaChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
@@ -38,9 +44,7 @@ export function WonArea({ data }: { data: WonPoint[] }) {
           axisLine={false}
           width={56}
           tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-          tickFormatter={(v: number) =>
-            v >= 1000 ? `$${Math.round(v / 1000)}k` : `$${v}`
-          }
+          tickFormatter={(v: number) => formatMoneyCompact(v, currency)}
         />
         <Tooltip
           cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }}
@@ -51,7 +55,7 @@ export function WonArea({ data }: { data: WonPoint[] }) {
               <div className="rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-sm">
                 <p className="font-medium">{p.label}</p>
                 <p className="text-muted-foreground">
-                  {formatMoney(p.total, "USD")} · {p.count} won
+                  {formatMoney(p.total, currency)} · {p.count} won
                 </p>
               </div>
             );

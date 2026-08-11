@@ -175,6 +175,22 @@ export const activities = pgTable(
   ],
 );
 
+// Cached FX rates (frankfurter.app, ECB data). Global reference data, not
+// workspace-scoped. rate = units of `quote` per 1 `base`, so converting an
+// amount in `quote` to `base` is amount / rate.
+export const exchangeRates = pgTable(
+  "exchange_rates",
+  {
+    base: char("base", { length: 3 }).notNull(),
+    quote: char("quote", { length: 3 }).notNull(),
+    rate: numeric("rate", { precision: 14, scale: 6 }).notNull(),
+    fetchedAt: timestamp("fetched_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.base, t.quote] })],
+);
+
 // ---------------------------------------------------------------------------
 // Agent (Phase 2)
 // ---------------------------------------------------------------------------

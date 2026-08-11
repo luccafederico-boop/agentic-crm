@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ensureWorkspace } from "@/lib/auth";
+import { convertToBase, getRatesToBase } from "@/lib/currency";
 import { db } from "@/lib/db";
 import {
   activities,
@@ -56,15 +57,17 @@ export default async function DashboardPage() {
       db
         .select({
           stage: deals.stage,
+          currency: deals.currency,
           total: sum(deals.amount),
           count: count(),
         })
         .from(deals)
         .where(wsFilter)
-        .groupBy(deals.stage),
+        .groupBy(deals.stage, deals.currency),
       db
         .select({
           month: sql<string>`to_char(${deals.updatedAt}, 'YYYY-MM')`,
+          currency: deals.currency,
           total: sum(deals.amount),
           count: count(),
         })
@@ -76,7 +79,7 @@ export default async function DashboardPage() {
             gte(deals.updatedAt, sixMonthsAgo),
           ),
         )
-        .groupBy(sql`to_char(${deals.updatedAt}, 'YYYY-MM')`),
+        .groupBy(sql`to_char(${deals.updatedAt}, 'YYYY-MM')`, deals.currency),
       db
         .select()
         .from(activities)
@@ -98,15 +101,26 @@ export default async function DashboardPage() {
         .where(eq(companies.workspaceId, workspace.id)),
     ]);
 
+  // Deals keep their native currency; totals convert to the workspace base
+  // currency at aggregation time using lazily-cached daily rates.
+  const base = workspace.baseCurrency;
+  const rates = await getRatesToBase(base, [
+    ...stageRows.map((r) => r.currency),
+    ...wonRows.map((r) => r.currency),
+  ]);
+
   const pipeline: PipelinePoint[] = (
     ["lead", "qualified", "proposal", "won", "lost"] as const
   ).map((stage) => {
-    const row = stageRows.find((r) => r.stage === stage);
+    const rows = stageRows.filter((r) => r.stage === stage);
     return {
       stage,
       label: STAGE_LABELS[stage],
-      total: Number(row?.total ?? 0),
-      count: row?.count ?? 0,
+      total: rows.reduce(
+        (s, r) => s + convertToBase(r.total, r.currency, base, rates),
+        0,
+      ),
+      count: rows.reduce((s, r) => s + r.count, 0),
     };
   });
 
@@ -119,12 +133,15 @@ export default async function DashboardPage() {
     const d = new Date();
     d.setMonth(d.getMonth() - i);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const row = wonRows.find((r) => r.month === key);
+    const rows = wonRows.filter((r) => r.month === key);
     won.push({
       month: key,
       label: d.toLocaleDateString("en-US", { month: "short" }),
-      total: Number(row?.total ?? 0),
-      count: row?.count ?? 0,
+      total: rows.reduce(
+        (s, r) => s + convertToBase(r.total, r.currency, base, rates),
+        0,
+      ),
+      count: rows.reduce((s, r) => s + r.count, 0),
     });
   }
 
@@ -136,7 +153,7 @@ export default async function DashboardPage() {
     { label: "Companies", value: String(companyCount.count), icon: Building2 },
     {
       label: "Open pipeline",
-      value: formatMoney(openPipelineValue, "USD"),
+      value: formatMoney(openPipelineValue, base),
       icon: Handshake,
     },
     {
@@ -157,7 +174,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="Dashboard"
-        description="Pipeline and agent activity at a glance. Amounts summed as USD."
+        description={`Pipeline and agent activity at a glance. Amounts converted to ${base}.`}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -183,7 +200,7 @@ export default async function DashboardPage() {
             <CardDescription>Total deal value in each stage.</CardDescription>
           </CardHeader>
           <CardContent>
-            <PipelineBar data={pipeline} />
+            <PipelineBar data={pipeline} currency={base} />
           </CardContent>
         </Card>
         <Card>
@@ -192,7 +209,7 @@ export default async function DashboardPage() {
             <CardDescription>Closed-won value, last 6 months.</CardDescription>
           </CardHeader>
           <CardContent>
-            <WonArea data={won} />
+            <WonArea data={won} currency={base} />
           </CardContent>
         </Card>
       </div>

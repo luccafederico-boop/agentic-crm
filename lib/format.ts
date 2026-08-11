@@ -10,6 +10,16 @@ export function formatMoney(
   }).format(Number(amount));
 }
 
+// Axis-tick variant: "$48K" instead of "$48,000".
+export function formatMoneyCompact(amount: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(amount);
+}
+
 export function formatDate(value: Date | string | null | undefined): string {
   if (!value) return "—";
   const d = typeof value === "string" ? new Date(value) : value;

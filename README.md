@@ -122,7 +122,7 @@ flowchart LR
 - [x] Phase 1 — Core CRM: companies, contacts, deals kanban, activities timeline
 - [x] Phase 2 — Research agent + evidence ledger + review UI + record chat
 - [x] Phase 3 — Dashboards, ⌘K quick switcher, logo mirroring (visible lane)
-- [ ] Phase 4 — Multi-currency deals (frankfurter.app, convert at read time)
+- [x] Phase 4 — Multi-currency deals (frankfurter.app, lazily-cached daily rates, convert at aggregation time)
 - [ ] Phase 5 — Gmail + Calendar sync
 
 ## License

@@ -1,26 +1,26 @@
 # Handoff — resume point
 
-> Snapshot updated 2026-08-11 at the end of Phase 3. Read `AGENTS.md` first for
+> Snapshot updated 2026-08-11 at the end of Phase 4. Read `AGENTS.md` first for
 > architecture and gotchas; this file is the "where exactly did we stop" note.
 
 ## State
 
 | Item | Status |
 |---|---|
-| Production | https://agentic-crm-delta.vercel.app — live, login working |
-| Phases 0–3 | ✅ complete, deployed, CI green |
-| Tests | 13 passing (9 evidence unit + 4 queue integration) |
+| Production | https://agentic-crm-delta.vercel.app — live, login working (runtime on the transaction pooler after the `EMAXCONNSESSION` incident) |
+| Phases 0–4 | ✅ complete, deployed, CI green |
+| Tests | 22 passing (9 evidence unit + 4 queue integration + 9 currency) |
 | Agent E2E | Verified live: ambiguous person → 0 facts saved; real public person → 3 `verified` facts auto-applied with cited sources; research also executed on Vercel prod |
 | Chat | ✅ runtime-tested (streams, runs tools, persists transcript). Fixed: tool outputs must be plain JSON — Date objects break streamText step 2 |
 | Visible lane | ✅ `mirror_logo` live — 10/10 seed logos mirrored to Supabase Storage |
+| Multi-currency | ✅ deals keep native currency; totals convert at aggregation time to the workspace base currency (editable in Settings) via lazily-cached daily frankfurter.app rates (`exchange_rates` table, 24h TTL, stale-on-API-failure) |
 
 ## Pending checklist (start here)
 
-- [ ] User manual QA in production: Research button, task trace, `/review`, chat panel, dashboard, Ctrl+K
-- [ ] Deals kanban and dashboard sum amounts assuming USD (Phase 4 fixes properly)
+- [ ] User manual QA in production: Research button, task trace, `/review`, chat panel, dashboard, Ctrl+K, Settings → base currency
 - [ ] Investigate why `push` doesn't auto-trigger GitHub Actions (manual `gh workflow run CI` works)
 - [ ] Rotate/revoke the Supabase personal access token once infra automation is no longer needed
-- [ ] Next feature work: **Phase 4 — multi-currency** (see roadmap in `AGENTS.md`)
+- [ ] Next feature work: **Phase 5 — Gmail + Calendar sync** (needs the user to create a Google Cloud OAuth client — Testing mode)
 
 ## Laptop setup
 

@@ -109,22 +109,79 @@ const ROLES = [
   "Data Analyst",
 ];
 
+// Mixed currencies on purpose: Phase 4 converts totals to the workspace base
+// currency at aggregation time.
 const DEAL_TITLES = [
-  { title: "Enterprise plan — annual", amount: "48000", stage: "proposal" },
-  { title: "Team seats expansion", amount: "12000", stage: "qualified" },
-  { title: "Platform migration", amount: "85000", stage: "lead" },
-  { title: "Renewal 2026", amount: "36000", stage: "won" },
-  { title: "Pilot program", amount: "5000", stage: "lead" },
-  { title: "API add-on", amount: "9000", stage: "qualified" },
-  { title: "Design system license", amount: "15000", stage: "proposal" },
-  { title: "Support tier upgrade", amount: "7500", stage: "won" },
-  { title: "Multi-region deployment", amount: "120000", stage: "lead" },
-  { title: "Analytics bundle", amount: "18000", stage: "lost" },
-  { title: "Onboarding services", amount: "6000", stage: "qualified" },
-  { title: "Security review package", amount: "22000", stage: "proposal" },
-  { title: "Custom integration", amount: "30000", stage: "lead" },
-  { title: "Training workshop", amount: "4000", stage: "won" },
-  { title: "Startup plan — annual", amount: "3600", stage: "qualified" },
+  {
+    title: "Enterprise plan — annual",
+    amount: "48000",
+    stage: "proposal",
+    currency: "USD",
+  },
+  {
+    title: "Team seats expansion",
+    amount: "12000",
+    stage: "qualified",
+    currency: "EUR",
+  },
+  {
+    title: "Platform migration",
+    amount: "85000",
+    stage: "lead",
+    currency: "USD",
+  },
+  { title: "Renewal 2026", amount: "36000", stage: "won", currency: "USD" },
+  { title: "Pilot program", amount: "5000", stage: "lead", currency: "GBP" },
+  { title: "API add-on", amount: "9000", stage: "qualified", currency: "USD" },
+  {
+    title: "Design system license",
+    amount: "15000",
+    stage: "proposal",
+    currency: "EUR",
+  },
+  {
+    title: "Support tier upgrade",
+    amount: "7500",
+    stage: "won",
+    currency: "BRL",
+  },
+  {
+    title: "Multi-region deployment",
+    amount: "120000",
+    stage: "lead",
+    currency: "USD",
+  },
+  {
+    title: "Analytics bundle",
+    amount: "18000",
+    stage: "lost",
+    currency: "USD",
+  },
+  {
+    title: "Onboarding services",
+    amount: "30000",
+    stage: "qualified",
+    currency: "BRL",
+  },
+  {
+    title: "Security review package",
+    amount: "22000",
+    stage: "proposal",
+    currency: "USD",
+  },
+  {
+    title: "Custom integration",
+    amount: "30000",
+    stage: "lead",
+    currency: "EUR",
+  },
+  { title: "Training workshop", amount: "4000", stage: "won", currency: "GBP" },
+  {
+    title: "Startup plan — annual",
+    amount: "3600",
+    stage: "qualified",
+    currency: "USD",
+  },
 ] as const;
 
 async function main() {
@@ -186,7 +243,7 @@ async function main() {
         title: d.title,
         amount: d.amount,
         stage: d.stage,
-        currency: "USD",
+        currency: d.currency,
         expectedClose: new Date(2026, 8 + (i % 4), 15)
           .toISOString()
           .slice(0, 10),

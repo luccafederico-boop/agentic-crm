@@ -7,6 +7,7 @@ import { StageSelect } from "@/components/crm/stage-select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ensureWorkspace } from "@/lib/auth";
+import { convertToBase, getRatesToBase } from "@/lib/currency";
 import { db } from "@/lib/db";
 import { companies, type DealStage, deals } from "@/lib/db/schema";
 import { formatMoney } from "@/lib/format";
@@ -39,6 +40,14 @@ export default async function DealsPage() {
       .orderBy(companies.name),
   ]);
 
+  // Cards show each deal's native currency; column totals convert to the
+  // workspace base currency at aggregation time.
+  const base = workspace.baseCurrency;
+  const rates = await getRatesToBase(
+    base,
+    rows.map(({ deal }) => deal.currency),
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader title="Deals" description="Pipeline by stage.">
@@ -57,7 +66,8 @@ export default async function DealsPage() {
         {STAGES.map(({ key, label }) => {
           const stageDeals = rows.filter(({ deal }) => deal.stage === key);
           const total = stageDeals.reduce(
-            (sum, { deal }) => sum + Number(deal.amount ?? 0),
+            (sum, { deal }) =>
+              sum + convertToBase(deal.amount, deal.currency, base, rates),
             0,
           );
           return (
@@ -65,7 +75,7 @@ export default async function DealsPage() {
               <div className="flex items-baseline justify-between">
                 <h2 className="text-sm font-medium">{label}</h2>
                 <span className="text-xs text-muted-foreground">
-                  {stageDeals.length} · {formatMoney(total, "USD")}
+                  {stageDeals.length} · {formatMoney(total, base)}
                 </span>
               </div>
               <div className="space-y-2">
