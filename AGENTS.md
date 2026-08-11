@@ -31,6 +31,7 @@ Current state and pending work: see `docs/HANDOFF.md`. UI, code, and commits are
 5. **NEVER pipe secret values through PowerShell 5.1** (`"value" | some-cli`): it prepends an invisible U+FEFF BOM — this corrupted all Vercel env vars and broke production login once. Use Git Bash: `printf '%s' "$VALUE" | cli`.
 6. **GitHub Actions on this repo does not auto-trigger on push** (account quirk). Run `gh workflow run CI --repo luccafederico-boop/agentic-crm` after pushing.
 7. Supabase pooler host for this project is **aws-0**-ca-central-1 (aws-1 → "tenant not found").
+   **Runtime must use the TRANSACTION pooler (port 6543)** — the session pooler's client cap gets exhausted by concurrent serverless lambdas (`EMAXCONNSESSION` 500s took prod down once). Session pooler (5432, `DATABASE_URL_SESSION`) is only for drizzle-kit migrations. Keep postgres-js at `max: 5` per instance.
 8. Biome 2.5: folder ignores without `/**`; `components/ui`, `drizzle`, `public` are excluded; css `tailwindDirectives: true`.
 
 ## Commands

@@ -6,9 +6,10 @@ export default defineConfig({
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    // Use the Supabase *session* pooler (port 5432) or direct connection for
-    // migrations. The transaction pooler (6543) does not support all DDL flows.
-    url: process.env.DATABASE_URL ?? "",
+    // Migrations prefer the *session* pooler (port 5432); the app runtime uses
+    // the transaction pooler (6543) via DATABASE_URL. In CI both are the same
+    // plain Postgres, so the fallback covers it.
+    url: process.env.DATABASE_URL_SESSION ?? process.env.DATABASE_URL ?? "",
   },
   strict: true,
   verbose: true,

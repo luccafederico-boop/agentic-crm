@@ -9,8 +9,16 @@ function createDb() {
   if (!url) {
     throw new Error("DATABASE_URL is not set — copy .env.example to .env");
   }
-  // prepare: false is required for the Supabase transaction pooler (port 6543).
-  const client = postgres(url, { prepare: false });
+  // Runtime MUST use the transaction pooler (port 6543): the session pooler
+  // has a small client cap and serverless lambdas exhausted it in production
+  // (EMAXCONNSESSION). prepare: false is required in transaction mode. Keep
+  // per-instance connections low — the pooler multiplexes server-side.
+  const client = postgres(url, {
+    prepare: false,
+    max: 5,
+    idle_timeout: 20,
+    connect_timeout: 15,
+  });
   return drizzle(client, { schema });
 }
 
