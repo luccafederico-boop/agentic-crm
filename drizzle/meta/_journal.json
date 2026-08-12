@@ -36,6 +36,13 @@
       "when": 1786477359132,
       "tag": "0004_google-sync",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786478000000,
+      "tag": "0005_lock-down-rpc",
+      "breakpoints": true
     }
   ]
 }

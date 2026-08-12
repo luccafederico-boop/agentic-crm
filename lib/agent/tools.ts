@@ -25,21 +25,46 @@ export type ToolContext = {
 };
 
 const BLOCKED_HOSTS =
-  /^(localhost|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.|\[::1\]|169\.254\.)/i;
+  /^(localhost|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.|\[?::1\]?|169\.254\.|\[?f[cde][0-9a-f]:|\[?fe80:|metadata\.|.*\.internal)$/i;
+
+// Rejects non-public targets. Applied to the initial URL AND every redirect
+// hop — following redirects blindly is a classic SSRF bypass (a public URL
+// that 302s to 169.254.169.254 / an internal host).
+function isBlockedTarget(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return true;
+  }
+  return (
+    !/^https?:$/.test(parsed.protocol) || BLOCKED_HOSTS.test(parsed.hostname)
+  );
+}
 
 async function fetchPageText(url: string): Promise<string> {
-  const parsed = new URL(url);
-  if (
-    !/^https?:$/.test(parsed.protocol) ||
-    BLOCKED_HOSTS.test(parsed.hostname)
-  ) {
+  if (isBlockedTarget(url)) {
     return "Blocked: only public http(s) URLs are allowed.";
   }
-  const res = await fetch(url, {
-    signal: AbortSignal.timeout(10_000),
-    headers: { "user-agent": "AgenticCRM-ResearchAgent/1.0" },
-    redirect: "follow",
-  });
+  // Follow redirects manually so each hop is re-validated against the guard.
+  let current = url;
+  let res: Response | null = null;
+  for (let hop = 0; hop < 5; hop++) {
+    res = await fetch(current, {
+      signal: AbortSignal.timeout(10_000),
+      headers: { "user-agent": "AgenticCRM-ResearchAgent/1.0" },
+      redirect: "manual",
+    });
+    if (res.status < 300 || res.status >= 400) break;
+    const location = res.headers.get("location");
+    if (!location) break;
+    const next = new URL(location, current).toString();
+    if (isBlockedTarget(next)) {
+      return "Blocked: redirect pointed to a non-public address.";
+    }
+    current = next;
+  }
+  if (!res) return "Fetch failed: no response.";
   if (!res.ok) return `Fetch failed with status ${res.status}`;
   const html = await res.text();
   // Crude but dependency-free text extraction.
