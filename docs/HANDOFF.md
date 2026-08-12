@@ -16,12 +16,17 @@
 | Multi-currency | ✅ deals keep native currency; totals convert at aggregation time to the workspace base currency (editable in Settings) via lazily-cached daily frankfurter.app rates (`exchange_rates` table, 24h TTL, stale-on-API-failure) |
 | Google sync | ✅ OAuth flow live (Testing-mode Google app, read-only Gmail/Calendar scopes). Refresh token AES-256-GCM encrypted in `google_accounts`. `google_sync` task (visible lane) matches messages/events to contacts by email → deduped timeline activities (`activities.external_id`). Enqueued on connect, "Sync now", and the daily cron |
 
+## Portfolio mode (2026-08-11)
+
+- Open signup: every new user gets an auto-seeded workspace (`lib/demo-data.ts`) with logo mirroring queued.
+- Daily per-workspace caps on paid features (`lib/limits.ts`): research runs and chat messages (env-overridable `RESEARCH_DAILY_LIMIT` / `CHAT_DAILY_LIMIT`).
+- Credentials rotated on 2026-08-11: DB password, `AGENT_DRAIN_SECRET`, `APP_ENCRYPTION_KEY` (old Google connection wiped — reconnect in Settings).
+
 ## Pending checklist (start here)
 
-- [ ] User connects their Google account in prod (Settings → Connect Google) and verifies emails/meetings land on contact timelines
-- [ ] User manual QA in production: Research button, task trace, `/review`, chat panel, dashboard, Ctrl+K, Settings → base currency
-- [ ] Investigate why `push` doesn't auto-trigger GitHub Actions (manual `gh workflow run CI` works)
-- [ ] Rotate/revoke the Supabase personal access token once infra automation is no longer needed
+- [ ] User: rotate Anthropic API key + Google OAuth client secret; revoke the Supabase personal access token (see chat checklist 2026-08-11)
+- [ ] User: reconnect Google in Settings (encryption key rotation invalidated the stored token)
+- [ ] `push` auto-trigger on GitHub Actions started working on 2026-08-11 — keep an eye; `gh workflow run CI` still available
 - [ ] Optional polish: Gmail sync uses a 50-message window per run; consider Gmail `historyId` incremental sync if volume grows
 
 ## Laptop setup
