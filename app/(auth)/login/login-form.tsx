@@ -1,12 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import {
-  type AuthState,
-  signInWithGoogle,
-  signInWithPassword,
-  signUp,
-} from "@/actions/auth";
+import { type AuthState, signInWithPassword, signUp } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,8 +30,8 @@ export function LoginForm() {
         </CardTitle>
         <CardDescription>
           {mode === "sign-in"
-            ? "Use your email or continue with Google."
-            : "It only takes a few seconds."}
+            ? "Sign in with your email and password."
+            : "It only takes a few seconds — your workspace comes pre-loaded with demo data."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -75,21 +70,6 @@ export function LoginForm() {
               : mode === "sign-in"
                 ? "Sign in"
                 : "Create account"}
-          </Button>
-        </form>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">or</span>
-          </div>
-        </div>
-
-        <form action={signInWithGoogle}>
-          <Button type="submit" variant="outline" className="w-full">
-            Continue with Google
           </Button>
         </form>
 

@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,13 +7,6 @@ export type AuthState = {
   error: string | null;
   message: string | null;
 };
-
-async function siteOrigin() {
-  const headerList = await headers();
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-  const proto = headerList.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${host}`;
-}
 
 export async function signInWithPassword(
   _prev: AuthState,
@@ -59,19 +51,6 @@ export async function signUp(
     };
   }
   redirect("/dashboard");
-}
-
-export async function signInWithGoogle() {
-  const supabase = await createClient();
-  const origin = await siteOrigin();
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: `${origin}/auth/callback?next=/dashboard` },
-  });
-  if (error || !data.url) {
-    redirect("/login?error=oauth");
-  }
-  redirect(data.url);
 }
 
 export async function signOut() {
