@@ -51,6 +51,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
+  const { chatMessagesRemaining } = await import("@/lib/limits");
+  if ((await chatMessagesRemaining(workspace.id)) <= 0) {
+    return NextResponse.json(
+      {
+        error:
+          "Daily chat limit reached for this workspace — try again tomorrow.",
+      },
+      { status: 429 },
+    );
+  }
+
   const subjectId = body.subjectId;
 
   const result = streamText({

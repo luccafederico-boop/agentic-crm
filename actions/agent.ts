@@ -24,6 +24,15 @@ export async function researchContact(
   });
   if (!contact) return { queued: false, message: "Contact not found." };
 
+  const { researchRunsRemaining } = await import("@/lib/limits");
+  if ((await researchRunsRemaining(workspace.id)) <= 0) {
+    return {
+      queued: false,
+      message:
+        "Daily research limit reached for this workspace — try again tomorrow.",
+    };
+  }
+
   const task = await enqueueTask({
     workspaceId: workspace.id,
     lane: "research",

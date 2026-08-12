@@ -1,8 +1,10 @@
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { cache } from "react";
 import { db } from "@/lib/db";
 import { type Workspace, workspaces } from "@/lib/db/schema";
+import { seedDemoData } from "@/lib/demo-data";
 import { createClient } from "@/lib/supabase/server";
 
 /** Redirects to /login when there is no authenticated user. */
@@ -35,7 +37,20 @@ export const ensureWorkspace = cache(async (): Promise<Workspace> => {
     .onConflictDoNothing({ target: workspaces.ownerId })
     .returning();
 
-  if (created) return created;
+  if (created) {
+    // New signup: populate the workspace so visitors land in a working CRM,
+    // then mirror the demo logos in the background. Never block login on it.
+    try {
+      await seedDemoData(created.id);
+      after(async () => {
+        const { drainQueue } = await import("@/lib/agent/runner");
+        await drainQueue(30_000).catch(() => {});
+      });
+    } catch (err) {
+      console.error("[auth] demo seeding failed (continuing):", err);
+    }
+    return created;
+  }
 
   // Lost a race with a concurrent request — the row exists now.
   const row = await db.query.workspaces.findFirst({

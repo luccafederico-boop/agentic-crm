@@ -2,7 +2,9 @@
 
 An **agent-first CRM**, built as a portfolio project.
 
-**Live demo:** https://agentic-crm-delta.vercel.app
+**Live demo:** https://agentic-crm-delta.vercel.app — sign up with any email
+(no confirmation needed); your workspace comes pre-loaded with demo data.
+LLM features (Research, chat) are rate-limited per workspace per day.
 
 The differentiator is not the CRUD — it's the **research agent with an
 evidence ledger**: every fact the agent finds carries weighted evidence.
