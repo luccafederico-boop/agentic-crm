@@ -1,13 +1,13 @@
 "use client";
 
 import {
+  Bot,
   Building2,
   Handshake,
   LayoutDashboard,
   LogOut,
   Settings,
   ShieldCheck,
-  Sparkles,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -54,7 +54,7 @@ export function AppSidebar({
       <SidebarHeader>
         <div className="flex items-center gap-2.5 px-1 py-1.5">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Sparkles className="size-4" />
+            <Bot className="size-4" />
           </span>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             <p className="truncate text-sm font-semibold tracking-tight">
