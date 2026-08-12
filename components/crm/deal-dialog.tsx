@@ -17,8 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Deal } from "@/lib/db/schema";
 import { CURRENCIES } from "@/lib/format";
 import { type FormState, initialFormState } from "@/lib/forms";
-
-const STAGES = ["lead", "qualified", "proposal", "won", "lost"] as const;
+import { STAGE_LABELS, STAGE_ORDER } from "@/lib/stages";
 
 const selectClass =
   "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs";
@@ -87,9 +86,9 @@ export function DealDialog({
                 defaultValue={deal?.stage ?? "lead"}
                 className={selectClass}
               >
-                {STAGES.map((s) => (
+                {STAGE_ORDER.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {STAGE_LABELS[s]}
                   </option>
                 ))}
               </select>

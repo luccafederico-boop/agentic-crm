@@ -2,7 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { Check, CircleCheck, X } from "lucide-react";
 import Link from "next/link";
 import { approveFact, dismissFact } from "@/actions/agent";
-import { BandChip, EvidenceList } from "@/components/agent/fact-card";
+import { BandChip, EvidenceList } from "@/components/agent/evidence";
 import { PageHeader } from "@/components/crm/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

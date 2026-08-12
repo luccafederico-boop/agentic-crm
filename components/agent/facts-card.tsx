@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { contactFacts } from "@/lib/db/schema";
-import { BandChip, EvidencePopover } from "./fact-card";
+import { BandChip, EvidencePopover } from "./evidence";
 
 export async function FactsCard({
   workspaceId,

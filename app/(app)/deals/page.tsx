@@ -9,18 +9,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ensureWorkspace } from "@/lib/auth";
 import { convertToBase, getRatesToBase } from "@/lib/currency";
 import { db } from "@/lib/db";
-import { companies, type DealStage, deals } from "@/lib/db/schema";
+import { companies, deals } from "@/lib/db/schema";
 import { formatMoney } from "@/lib/format";
+import { STAGE_LABELS, STAGE_ORDER } from "@/lib/stages";
 
 export const metadata = { title: "Deals — Agentic CRM" };
-
-const STAGES: Array<{ key: DealStage; label: string }> = [
-  { key: "lead", label: "Lead" },
-  { key: "qualified", label: "Qualified" },
-  { key: "proposal", label: "Proposal" },
-  { key: "won", label: "Won" },
-  { key: "lost", label: "Lost" },
-];
 
 export default async function DealsPage() {
   const workspace = await ensureWorkspace();
@@ -63,7 +56,8 @@ export default async function DealsPage() {
       </PageHeader>
 
       <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-5">
-        {STAGES.map(({ key, label }) => {
+        {STAGE_ORDER.map((key) => {
+          const label = STAGE_LABELS[key];
           const stageDeals = rows.filter(({ deal }) => deal.stage === key);
           const total = stageDeals.reduce(
             (sum, { deal }) =>

@@ -3,8 +3,7 @@
 import { useTransition } from "react";
 import { moveDealStage } from "@/actions/deals";
 import type { DealStage } from "@/lib/db/schema";
-
-const STAGES: DealStage[] = ["lead", "qualified", "proposal", "won", "lost"];
+import { STAGE_LABELS, STAGE_ORDER } from "@/lib/stages";
 
 export function StageSelect({
   dealId,
@@ -26,9 +25,9 @@ export function StageSelect({
         startTransition(() => moveDealStage(dealId, next));
       }}
     >
-      {STAGES.map((s) => (
+      {STAGE_ORDER.map((s) => (
         <option key={s} value={s}>
-          {s}
+          {STAGE_LABELS[s]}
         </option>
       ))}
     </select>

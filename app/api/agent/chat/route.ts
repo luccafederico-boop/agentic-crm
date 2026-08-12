@@ -9,28 +9,21 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { chatSystemPrompt } from "@/lib/agent/prompts";
 import { buildContactTools } from "@/lib/agent/tools";
+import { getUserWorkspace } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { agentMessages, contacts, workspaces } from "@/lib/db/schema";
-import { createClient } from "@/lib/supabase/server";
+import { agentMessages, contacts } from "@/lib/db/schema";
+import { chatMessagesRemaining } from "@/lib/limits";
 
 export const maxDuration = 60;
 
 const MODEL_ID = process.env.AGENT_MODEL ?? "claude-sonnet-5";
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+  const auth = await getUserWorkspace();
+  if (!auth) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
-  const workspace = await db.query.workspaces.findFirst({
-    where: eq(workspaces.ownerId, user.id),
-  });
-  if (!workspace) {
-    return NextResponse.json({ error: "no workspace" }, { status: 403 });
-  }
+  const { workspace } = auth;
 
   const body = (await req.json()) as {
     messages: UIMessage[];
@@ -51,7 +44,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  const { chatMessagesRemaining } = await import("@/lib/limits");
   if ((await chatMessagesRemaining(workspace.id)) <= 0) {
     return NextResponse.json(
       {

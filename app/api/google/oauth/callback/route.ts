@@ -1,12 +1,11 @@
-import { eq } from "drizzle-orm";
 import { after, NextResponse } from "next/server";
 import { enqueueTask } from "@/lib/agent/queue";
 import { drainQueue } from "@/lib/agent/runner";
+import { getUserWorkspace } from "@/lib/auth";
 import { encryptSecret } from "@/lib/crypto";
 import { db } from "@/lib/db";
-import { googleAccounts, workspaces } from "@/lib/db/schema";
+import { googleAccounts } from "@/lib/db/schema";
 import { exchangeCode, requestOrigin } from "@/lib/google/oauth";
-import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
 
@@ -32,19 +31,11 @@ export async function GET(request: Request) {
     return settingsRedirect(origin, { google: "state_mismatch" });
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+  const auth = await getUserWorkspace();
+  if (!auth) {
     return NextResponse.redirect(new URL("/login", origin));
   }
-  const workspace = await db.query.workspaces.findFirst({
-    where: eq(workspaces.ownerId, user.id),
-  });
-  if (!workspace) {
-    return settingsRedirect(origin, { google: "no_workspace" });
-  }
+  const { workspace } = auth;
 
   try {
     const { refreshToken, scopes, email } = await exchangeCode(origin, code);

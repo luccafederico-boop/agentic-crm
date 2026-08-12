@@ -39,16 +39,9 @@ import {
   deals,
 } from "@/lib/db/schema";
 import { formatMoney, formatRelative } from "@/lib/format";
+import { STAGE_LABELS, STAGE_ORDER } from "@/lib/stages";
 
 export const metadata = { title: "Dashboard — Agentic CRM" };
-
-const STAGE_LABELS: Record<string, string> = {
-  lead: "Lead",
-  qualified: "Qualified",
-  proposal: "Proposal",
-  won: "Won",
-  lost: "Lost",
-};
 
 const ACTIVITY_ICONS: Record<
   string,
@@ -133,9 +126,7 @@ export default async function DashboardPage() {
     ...wonRows.map((r) => r.currency),
   ]);
 
-  const pipeline: PipelinePoint[] = (
-    ["lead", "qualified", "proposal", "won", "lost"] as const
-  ).map((stage) => {
+  const pipeline: PipelinePoint[] = STAGE_ORDER.map((stage) => {
     const rows = stageRows.filter((r) => r.stage === stage);
     return {
       stage,

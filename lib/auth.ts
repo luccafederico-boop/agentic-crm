@@ -1,3 +1,4 @@
+import type { User } from "@supabase/supabase-js";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
@@ -18,6 +19,31 @@ export const requireUser = cache(async () => {
   }
   return user;
 });
+
+/**
+ * Non-redirecting auth for API routes: returns the authed user and their
+ * workspace, or null if either is missing. API routes must answer with JSON
+ * or their own redirect, so they can't use requireUser()/ensureWorkspace()
+ * (which redirect to /login). Does not create a workspace — a signed-in user
+ * always has one from their first page load.
+ */
+export async function getUserWorkspace(): Promise<{
+  user: User;
+  workspace: Workspace;
+} | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const workspace = await db.query.workspaces.findFirst({
+    where: eq(workspaces.ownerId, user.id),
+  });
+  if (!workspace) return null;
+
+  return { user, workspace };
+}
 
 /** Idempotently creates the user's workspace on first login. */
 export const ensureWorkspace = cache(async (): Promise<Workspace> => {

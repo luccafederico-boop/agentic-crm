@@ -354,6 +354,4 @@ export type Deal = typeof deals.$inferSelect;
 export type Activity = typeof activities.$inferSelect;
 export type DealStage = Deal["stage"];
 export type AgentTask = typeof agentTasks.$inferSelect;
-export type GoogleAccount = typeof googleAccounts.$inferSelect;
-export type AgentEvent = typeof agentEvents.$inferSelect;
 export type ContactFact = typeof contactFacts.$inferSelect;

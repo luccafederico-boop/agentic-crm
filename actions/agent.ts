@@ -10,6 +10,7 @@ import { drainQueue } from "@/lib/agent/runner";
 import { ensureWorkspace, requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { contactFacts, contacts } from "@/lib/db/schema";
+import { researchRunsRemaining } from "@/lib/limits";
 
 export async function researchContact(
   contactId: string,
@@ -24,7 +25,6 @@ export async function researchContact(
   });
   if (!contact) return { queued: false, message: "Contact not found." };
 
-  const { researchRunsRemaining } = await import("@/lib/limits");
   if ((await researchRunsRemaining(workspace.id)) <= 0) {
     return {
       queued: false,
